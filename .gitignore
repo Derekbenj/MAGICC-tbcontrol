@@ -1,4 +1,5 @@
 control_testing/.catkin_workspace
+control_testing/.vscode/
 control_testing/build/
 control_testing/devel/
 control_testing/src/.vscode/
