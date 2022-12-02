@@ -1,1 +1,1 @@
-int8 keypress
+int16 keypress
