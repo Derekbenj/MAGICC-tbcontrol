@@ -4,3 +4,4 @@ control_testing/build/
 control_testing/devel/
 control_testing/src/.vscode/
 control_testing/src/keys/.vscode/
+control_testing/src/CMakeLists.txt

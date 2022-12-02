@@ -2,7 +2,7 @@
 #include "keys/Key.h"
 #include "curses.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 
     // CURSES
