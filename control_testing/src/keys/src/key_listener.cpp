@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "keys/Key.h"
+#include "geometry_msgs/Twist.h"
 #include "curses.h"
 
 int main(int argc, char** argv)
@@ -20,56 +20,59 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
 
     // ros publisher
-    ros::Publisher keys_pub = n.advertise<keys::Key>("keys_heard", 1000);
+    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1000);
     ros::Rate loop_rate(100);
 
     // start loop for listening for keypresses!
 
-    keys::Key new_key;
+    int new_key;
     int count = 0;
+
     while (ros::ok())
     {
-        if ((new_key.keypress = getch()) == ERR)
+        if ((new_key = getch()) == ERR)
         {
             //continue; we don't just want to continue... we want ros to take over and limit our message passing frequency... just have it skip the conditionals
             // by not doing anything.
         }
-        else if (new_key.keypress == 'x')
+        else if (new_key == 'x')
         {
             ros::shutdown();
         }
         else
         {
+            geometry_msgs::Twist msg;
+
             count++;
-            switch (new_key.keypress)
+            switch (new_key)
             {
             case KEY_UP:
                 wprintw(win, "%d: [up]\n", count);
                 wrefresh(win);
                 //ROS_INFO("Saw Keypress: [%d]\n", 1);
-                new_key.keypress = 1;
-                keys_pub.publish(new_key);
+                msg.linear.x = 0.3;
+                cmd_pub.publish(msg);
                 break;
             case KEY_DOWN:
                 wprintw(win, "%d: [down]\n", count);
                 wrefresh(win);
                 //ROS_INFO("Saw Keypress: [%d]\n", 2);
-                new_key.keypress = 2;
-                keys_pub.publish(new_key);
+                msg.linear.x = -0.3;
+                cmd_pub.publish(msg);
                 break;
             case KEY_LEFT:
                 wprintw(win, "%d: [left]\n", count);
                 wrefresh(win);
                 //ROS_INFO("Saw Keypress: [%d]\n", 3);
-                new_key.keypress = 3;
-                keys_pub.publish(new_key);
+                msg.angular.z = 0.3;
+                cmd_pub.publish(msg);
                 break;
             case KEY_RIGHT:
                 wprintw(win, "%d: [right]\n", count);
                 wrefresh(win);
                 //ROS_INFO("Saw Keypress: [%d]\n", 4);
-                new_key.keypress = 4;
-                keys_pub.publish(new_key);
+                msg.angular.z = -0.3;
+                cmd_pub.publish(msg);
                 break;
             case KEY_RESIZE:
                 wprintw(win, "%d: [RESIZE]\n", count);
