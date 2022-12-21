@@ -1,0 +1,36 @@
+<!--
+
+we won't rely on the default value for the argument "turtlebot" but instead
+pass in a value from the master that calls this launch file once for each turtlebot
+
+
+each individual turtlebot's launch command in the master launch will need to launch these launch files with an "include" tag
+and the arg name specified in a subtag called "arg" as in the example code on the next three lines:
+
+<include file="[start_all.launch for the specific robot]">
+    <arg name="usb_port_path" value="[the value they decide]" />
+</include>
+
+this is effectively like passing in an argument to the launch file's call that then shows up in THIS launch file and replaces
+the default value for that argument specified here.
+
+-->
+
+<launch>
+    <arg name="usb_port_path" default="/dev/ttyUSB0" />
+    <arg name="turtlebot_name" default="name_defaulted_to_this" />
+
+    <!-- this will be for a single bot... repeat with new namespace name for another bot and controls -->
+    <group ns="$(turtlebot_name)">
+
+        <node pkg="keys",            name="speed_and_direction_listener", type="key_receiver" />
+        <node pkg="rosserial_python" name="arduino_light_sensor"          type="serial_node.py">
+
+            <param name="port" type = "string" value="$(arg usb_port_path)" />
+            <param name="baud" type = "int"    value="57600" />        
+
+        </node>
+
+        <include file="$(find turtlebot_bringup)/minimal.launch" />
+    </group>
+<launch>
