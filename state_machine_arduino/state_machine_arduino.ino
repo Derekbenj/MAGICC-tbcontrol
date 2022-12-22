@@ -2,21 +2,23 @@
 #include <std_msgs/Int8.h>
 #include <keys/LRM.h>
 
-#define ROLLING_AVG_LEN 40
+#define ROLLING_AVG_LEN 35
 #define NUM_MEASURES_CALIBRATION 1000
 #define MULTIPLIER 2
 
 int analogPin = A0;  // we'll read in the values from here
-int room_offset = 0; // the ambient light level in the room we will subtract from measurements
+int dark_offset = 0;
+int bright_offset = 0; // higher bound
 int measurements[ROLLING_AVG_LEN] = {};
 
 ros::NodeHandle nh;
 keys::LRM light_reading_msg;
 
 enum States {
-  IDLE_ST      = 1,
-  CALIBRATE_ST = 2,
-  ACTIVE_ST    = 3,
+  IDLE_ST           = 1,
+  CALIBRATE_MIN_ST  = 2,
+  CALIBRATE_MAX_ST  = 3,
+  ACTIVE_ST         = 4,
 } current_st;
 
 struct helperData { 
@@ -50,11 +52,11 @@ int calc_rolling_avg(helperData data = {}) {
   sum += measurements[data.replacement_index];
 //  }
   
-  return -((sum / ROLLING_AVG_LEN) - room_offset);
+  return -((sum / ROLLING_AVG_LEN) - dark_offset);
 }
 
 // gets the lowest of 30 measurements and uses that as the offset
-void calibrate() {
+void calibrate(int& offset) {
   static int latest;
   static int prev_value;
 
@@ -72,29 +74,31 @@ void calibrate() {
     average = average * float((i))/float(i+1) + latest / float(i+1);
   }
 
-  room_offset = average*MULTIPLIER; 
+  offset = average*MULTIPLIER; 
 }
 
 void statesCallback(const std_msgs::Int8& input_st) {
   // transitions
   switch(current_st) {
     case IDLE_ST:
-    if (input_st.data == CALIBRATE_ST) {
-      current_st = CALIBRATE_ST; 
+    if (input_st.data == CALIBRATE_MIN_ST) {
+      current_st = CALIBRATE_MIN_ST;
+    } else if (input_st.data == CALIBRATE_MAX_ST) {
+      current_st = CALIBRATE_MAX_ST; 
     } else if (input_st.data == ACTIVE_ST) {
       current_st = ACTIVE_ST;
     } else {
       current_st = IDLE_ST;
     }
     break;
-    case CALIBRATE_ST:
-    current_st = CALIBRATE_ST;
+    case CALIBRATE_MIN_ST:
+    current_st = CALIBRATE_MIN_ST;
     break;
+    case CALIBRATE_MAX_ST:
+    current_st = CALIBRATE_MAX_ST;
     case ACTIVE_ST:
     if (input_st.data == IDLE_ST) {
       current_st = IDLE_ST;
-    } else if (input_st.data == CALIBRATE_ST) {
-      current_st = CALIBRATE_ST;
     } else {
       current_st = ACTIVE_ST;
     }
@@ -113,6 +117,7 @@ void setup() {
   nh.advertise(light_reading_publisher);
   nh.subscribe(sm_tran_cmds);
   nh.negotiateTopics();
+  light_reading_msg.light_reading = 0;
 
   delay(1000); // if we don't delay here, we start to run into a problem when we start the arduino node. that problem is "topic id 125: Tried to publish before configured"
 }
@@ -123,19 +128,26 @@ void loop() {
     case IDLE_ST:
     // publish the message we promise to over the "light_readings" topic and tell it we're in state 1
     light_reading_msg.current_st = 1;
-    light_reading_msg.light_reading = room_offset;
     break;
-    case CALIBRATE_ST:
+    case CALIBRATE_MIN_ST:
     // call calibration code and publish the message over "light_readings" topic again, telling the user we're in state 2
-    calibrate();
+    calibrate(dark_offset);
     light_reading_msg.current_st = 2;
-    light_reading_msg.light_reading = room_offset;
+    light_reading_msg.light_reading = dark_offset;
+    current_st = IDLE_ST;
+    break;
+    case CALIBRATE_MAX_ST:
+    calibrate(bright_offset);
+    light_reading_msg.current_st = 3;
+    light_reading_msg.light_reading = bright_offset;
     current_st = IDLE_ST;
     break;
     case ACTIVE_ST:
     // calculate the next average of the moving average and publish it, telling the user we're in state 3...
-    light_reading_msg.current_st = 3;
+    light_reading_msg.current_st = 4;
     light_reading_msg.light_reading = calc_rolling_avg(store_measurement(analogRead(analogPin)*MULTIPLIER));
+    if (light_reading_msg.light_reading < 0) light_reading_msg.light_reading = 0;
+    light_reading_msg.light_reading = (1000.0/((float)(bright_offset))*light_reading_msg.light_reading);
     break;
   }
 
