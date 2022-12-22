@@ -3,8 +3,8 @@
 #include <keys/LRM.h>
 
 #define ROLLING_AVG_LEN 40
-#define NUM_MEASURES_CALIBRATION 100
-#define MULTIPLIER 10
+#define NUM_MEASURES_CALIBRATION 1000
+#define MULTIPLIER 2
 
 int analogPin = A0;  // we'll read in the values from here
 int room_offset = 0; // the ambient light level in the room we will subtract from measurements
@@ -74,12 +74,6 @@ void calibrate() {
 
   room_offset = average*MULTIPLIER; 
 }
-
-//void calibrate() {
-//  for (int i = 0; i < NUM_MEASURES_CALIBRATION; ++i) {
-//    room_offset = calc_rolling_avg(store_measurement(analogRead(analogPin)));
-//  }
-//}
 
 void statesCallback(const std_msgs::Int8& input_st) {
   // transitions
