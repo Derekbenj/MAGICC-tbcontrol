@@ -53,6 +53,7 @@ find_package(Curses REQUIRED)
 add_message_files(
     FILES
     Key.msg
+    LRM.msg
 )
 
 ## Generate services in the 'srv' folder

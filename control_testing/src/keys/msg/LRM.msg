@@ -1,0 +1,2 @@
+int8 current_st
+int16 light_reading
