@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
 
     // ros publisher
-    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("turtle1/cmd_vel", 1000);
+    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1000);
     ros::Rate loop_rate(100);
 
     // start loop for listening for keypresses!
