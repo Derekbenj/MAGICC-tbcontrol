@@ -110,6 +110,7 @@ void loop() {
     case IDLE_ST:
     // publish the message we promise to over the "light_readings" topic and tell it we're in state 1
     light_reading_msg.current_st = 1;
+    reading = 0;
     break;
     case CALIBRATE_MIN_ST:
     // call calibration code and publish the message over "light_readings" topic again, telling the user we're in state 2
