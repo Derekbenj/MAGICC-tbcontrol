@@ -4,7 +4,6 @@
 
 #define ROLLING_AVG_LEN 35
 #define NUM_MEASURES_CALIBRATION 1000
-#define MULTIPLIER 2
 
 int analogPin = A0;  // we'll read in the values from here
 int dark_offset = 0;
@@ -27,9 +26,16 @@ struct helperData {
 };
 
 helperData store_measurement(int measurement) {
+  
+  // for help with calculating the average without using too much dynamic memory
   static int replacement_index = 0;
-  replacement_index = replacement_index % ROLLING_AVG_LEN;
 
+  // our photoresistor setup measures "dark", but we want to measure light, so reverse it's mapping.
+  measurement = map(measurement, 0, 1023, 1023, 0);
+
+  // which index is next in line to replace: replace it and since you're a helper function tell the function that you return to which index you replaced
+  // and the value you removed.
+  replacement_index = replacement_index % ROLLING_AVG_LEN;
   helperData to_return;
   to_return.replacement_index = replacement_index;
   to_return.value_replaced = measurements[replacement_index];
@@ -39,42 +45,17 @@ helperData store_measurement(int measurement) {
   return to_return;
 }
 
-int calc_rolling_avg(helperData data = {}) {
+float calc_rolling_avg(helperData data = {}) {
   static long sum = 0;
-//  if (recalculate_sum) {
-//    sum = 0;
-//    for (int i = 0; i < ROLLING_AVG_LEN; ++i)
-//    {
-//      sum += measurements[i];
-//    }
-//  } else {
   sum -= data.value_replaced;
   sum += measurements[data.replacement_index];
-//  }
-  
-  return -((sum / ROLLING_AVG_LEN) - dark_offset);
+  return (sum / ROLLING_AVG_LEN);
 }
 
-// gets the lowest of 30 measurements and uses that as the offset
 void calibrate(int& offset) {
-  static int latest;
-  static int prev_value;
-
-  prev_value = analogRead(analogPin);
-  
-  // get the lowest of NUM_MEASURES_CALIBRATION measurements and assume that's the average
   for (int i = 0; i < NUM_MEASURES_CALIBRATION; ++i) {
-    latest = analogRead(analogPin);
-    if (latest < prev_value) prev_value = latest;
+    offset = calc_rolling_avg(store_measurement(analogRead(analogPin)));
   }
-
-  int average = prev_value;
-  for (int i = 1; i < ROLLING_AVG_LEN; ++i) {
-    latest = analogRead(analogPin);
-    average = average * float((i))/float(i+1) + latest / float(i+1);
-  }
-
-  offset = average*MULTIPLIER; 
 }
 
 void statesCallback(const std_msgs::Int8& input_st) {
@@ -123,6 +104,7 @@ void setup() {
 }
 
 void loop() {
+  static float reading = 0;
   // actions
   switch(current_st) {
     case IDLE_ST:
@@ -133,24 +115,24 @@ void loop() {
     // call calibration code and publish the message over "light_readings" topic again, telling the user we're in state 2
     calibrate(dark_offset);
     light_reading_msg.current_st = 2;
-    light_reading_msg.light_reading = dark_offset;
+    reading = dark_offset;
     current_st = IDLE_ST;
     break;
     case CALIBRATE_MAX_ST:
     calibrate(bright_offset);
     light_reading_msg.current_st = 3;
-    light_reading_msg.light_reading = bright_offset;
+    reading = bright_offset;
     current_st = IDLE_ST;
     break;
     case ACTIVE_ST:
-    // calculate the next average of the moving average and publish it, telling the user we're in state 3...
     light_reading_msg.current_st = 4;
-    light_reading_msg.light_reading = calc_rolling_avg(store_measurement(analogRead(analogPin)*MULTIPLIER));
-    if (light_reading_msg.light_reading < 0) light_reading_msg.light_reading = 0;
-    light_reading_msg.light_reading = (1000.0/((float)(bright_offset))*light_reading_msg.light_reading);
+    reading = (calc_rolling_avg(store_measurement(analogRead(analogPin))) - dark_offset)/((float)(bright_offset-dark_offset))*1000;
+    reading = constrain(reading, 0, 1000);
     break;
   }
 
+  light_reading_msg.light_reading = reading;
+  
   nh.spinOnce();
   light_reading_publisher.publish(&light_reading_msg);
 }
