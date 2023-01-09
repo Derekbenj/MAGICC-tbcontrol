@@ -65,8 +65,11 @@ class controller():
 
 
     def get_control(self, state, t):
+        # updated to keep track of timesteps. The timestep is associated with the lapse in time between calls to this function in order to track
+        # the time the turtlebot has been allowed to move
         self.timestep = time.time_ns() - self.time
         self.time = time.time_ns()
+
         turnRateReference, velocityReference = self.compute_velocity_and_turn_rate_references(t)
         stateReference = self.compute_reference_state(t)
         print(turnRateReference)

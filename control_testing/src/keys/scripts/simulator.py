@@ -47,7 +47,12 @@ def integrate_dynamics(state, input, dt, turn_rate_range, velocity_range):
 
 
 def run_simulation(controller, ros_node, initialState, time, timeStep, turn_rate_range, velocity_range):
-    
+    '''
+    Configure the turtlebot by spawning the new turtle named "my_turtle" and teleporting him to a random start position near 0, 0. For the amount of time calculated in our
+    spline trajectory, get the turtlebot's current position and make the geometry_twist message for our turtlebot using the controller code. Publish that information to
+    the topic controlling the turtlebot and ask the turtlebot for it's new position after receiving the command. Finally, update the time variable. Commented code lets you compare
+    the turtlebot's actual position to a dynamics solver's expected position following the course-correcting commands.
+    '''
     # initial configuration
     steps = int(time / timeStep) 
     try:
@@ -66,19 +71,16 @@ def run_simulation(controller, ros_node, initialState, time, timeStep, turn_rate
 
     while t < time:
         input  = controller.get_control(np.array(currentState), t)
-        # the zero in the function call is just to satisfy the need for a "time" variable in dynamics even though it's never used
         ros_node.generate_twist_msg(input)
-        # ros_node.generate_twist_msg(input);
-        nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) + np.random.normal(0, [0.01,0.01,0.01], 3)
-        # nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) 
+        # nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) + np.random.normal(0, [0.01,0.01,0.01], 3)
         ros_node.publish_cmd_vel()
         currentState = ros_node.get_current_state()
         states.append(currentState)
         t += controller.timestep / 1000000000
         print("\ntime is: ", t, end='\n\n')
 
-        print("turtlebot position: ", ros_node.get_current_state())
-        print("sim       position: ", nextState)
+        # print("turtlebot position: ", ros_node.get_current_state())
+        # print("sim       position: ", nextState)
 
     return np.array(states)
 
@@ -93,7 +95,6 @@ if __name__ == '__main__':
 
     # control points are [x, y, theta]. x and y have max of 11
     controlPoints = [[0,0],[4,1], [0,5],[8,8]]
-    # controlPoints = [[0,0],[2,0.5], [0,2.5],[4,4],[5,6],[8,8]]
     splineTime = [0,10]
 
     spline = spline_seg(controlPoints, splineTime[0], splineTime[1])
@@ -106,6 +107,7 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
 
+    # code for displaying error, velocities, etc. after the simulation finishes
     plt.figure()
     error = np.array(cont.error)
     plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,0], label = 'X error')
