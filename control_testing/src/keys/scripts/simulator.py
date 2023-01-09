@@ -64,36 +64,36 @@ def run_simulation(controller, ros_node, initialState, time, timeStep, turn_rate
     t = 0
     states = []
 
-    for i in range(steps):
+    while t < time:
         input  = controller.get_control(np.array(currentState), t)
         # the zero in the function call is just to satisfy the need for a "time" variable in dynamics even though it's never used
-        ros_node.generate_twist_msg(dynamics(currentState, 0, input, turn_rate_range, velocity_range))
+        ros_node.generate_twist_msg(input)
         # ros_node.generate_twist_msg(input);
-        # nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) + np.random.normal(0, [0.01,0.01,0.01], 3)
-        nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) 
+        nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) + np.random.normal(0, [0.01,0.01,0.01], 3)
+        # nextState = integrate_dynamics(currentState, input, timeStep, turn_rate_range, velocity_range) 
         ros_node.publish_cmd_vel()
-        states.append(nextState)
         currentState = ros_node.get_current_state()
-        # currentState = nextState
-        t += timeStep
+        states.append(currentState)
+        t += controller.timestep / 1000000000
+        print("\ntime is: ", t, end='\n\n')
 
         print("turtlebot position: ", ros_node.get_current_state())
-        print("sim       position: ", currentState)
+        print("sim       position: ", nextState)
 
-        sleep(0.1)
     return np.array(states)
 
 
 if __name__ == '__main__':
     # set caps on turn rate 
-    turn_rate_range = [-1,1]
-    velocity_range = [0.5,5]
+    turn_rate_range = [-2,2]
+    velocity_range = [0.5,10]
 
     # start the turtle off with a random location [x, y, theta] each with a random value between 0 and 1
     state_0 = np.random.uniform([0,0,0], [1,1,1],3)
 
     # control points are [x, y, theta]. x and y have max of 11
     controlPoints = [[0,0],[4,1], [0,5],[8,8]]
+    # controlPoints = [[0,0],[2,0.5], [0,2.5],[4,4],[5,6],[8,8]]
     splineTime = [0,10]
 
     spline = spline_seg(controlPoints, splineTime[0], splineTime[1])
@@ -106,24 +106,24 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
 
-    # plt.figure()
-    # error = np.array(cont.error)
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,0], label = 'X error')
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,1], label = 'Y error')
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,2], label = 'Theta error')
-    # plt.legend()
+    plt.figure()
+    error = np.array(cont.error)
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,0], label = 'X error')
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,1], label = 'Y error')
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(error[:,0])),error[:,2], label = 'Theta error')
+    plt.legend()
     
-    # plt.figure()
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(turnRateHistory)), turnRateHistory)
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*turn_rate_range[0], color = 'r')
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*turn_rate_range[1], color = 'r')
-    # plt.title("turn rate")
+    plt.figure()
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(turnRateHistory)), turnRateHistory)
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*turn_rate_range[0], color = 'r')
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*turn_rate_range[1], color = 'r')
+    plt.title("turn rate")
 
-    # plt.figure()
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(velocityHistory)), velocityHistory)
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*velocity_range[0], color = 'r')
-    # plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*velocity_range[1], color = 'r')
-    # plt.title("velocity")
+    plt.figure()
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(velocityHistory)), velocityHistory)
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*velocity_range[0], color = 'r')
+    plt.plot(np.linspace(splineTime[0], splineTime[1], len(cont.turnRateHistory)), np.ones(len(cont.turnRateHistory))*velocity_range[1], color = 'r')
+    plt.title("velocity")
 
     plt.figure()
     plot_spline(spline, 31)

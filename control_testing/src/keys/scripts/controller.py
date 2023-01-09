@@ -1,5 +1,5 @@
+import time
 import numpy as np
-
 from scipy import interpolate
 import matplotlib.pyplot as plt
 
@@ -20,6 +20,9 @@ class controller():
         self.error = []
         self.turnRateHistory = []
         self.velocityHistory = []
+
+        self.time = time.time_ns()
+        self.timestep = 0
     
 
     def set_spline(self, spline):
@@ -62,6 +65,8 @@ class controller():
 
 
     def get_control(self, state, t):
+        self.timestep = time.time_ns() - self.time
+        self.time = time.time_ns()
         turnRateReference, velocityReference = self.compute_velocity_and_turn_rate_references(t)
         stateReference = self.compute_reference_state(t)
         print(turnRateReference)

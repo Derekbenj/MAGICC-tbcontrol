@@ -1,5 +1,6 @@
 import math
 import rospy
+import time
 from turtlesim.msg import Pose
 from geometry_msgs.msg import Twist
 from turtlesim.srv import Kill
@@ -19,6 +20,8 @@ class ros_control_node():
         rospy.init_node("control_alg_node", anonymous=True)
         self.pose = Pose()
         self.twist = Twist()
+        self.time = time.time_ns()
+        self.timestep = 0
 
         rospy.wait_for_service("/spawn")
         rospy.wait_for_service("/kill")
@@ -46,6 +49,8 @@ class ros_control_node():
         return [self.pose.x, self.pose.y, self.pose.theta]
 
     def publish_cmd_vel(self):
+        # self.timestep = time.time_ns() - self.time
+        # self.time = time.time_ns()
         self.cmd_vel_pub.publish(self.twist)
 
     # def generate_twist_msg(self, input):
@@ -60,12 +65,12 @@ class ros_control_node():
         # print('geometry msg: ', [self.twist.linear.x, self.twist.linear.y, self.twist.linear.z], [self.twist.angular.x, self.twist.angular.y, self.twist.angular.z])
 
     def generate_twist_msg(self, components_dot):
-        self.twist.linear.x = components_dot[0]
-        self.twist.linear.y = components_dot[1]
+        self.twist.linear.x = components_dot[1]
+        self.twist.linear.y = 0
         self.twist.linear.z = 0
 
         self.twist.angular.x = 0
         self.twist.angular.y = 0
-        self.twist.angular.z = components_dot[2] # check this... angular data probs radians when read from controller.
+        self.twist.angular.z = components_dot[0] # check this... angular data probs radians when read from controller.
         # ^^ is the angular velocity being created by the controller in the same form as the turtlebot requires? I think turtlebot agrees with the state...
         print('geometry msg: ', [self.twist.linear.x, self.twist.linear.y, self.twist.linear.z], [self.twist.angular.x, self.twist.angular.y, self.twist.angular.z])
