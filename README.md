@@ -12,3 +12,8 @@ Current State:
 Useful Notes:
     1) Don't eat up too much of the dynamic memory in the Arduino code if you modify it. Any code using 75% or more starts warning me that the arduino may malfunction, and often it does.
     2) The control testing code should be run with the simulation.py module (which will open a ROS node) and will pause until the turtlesim_node is up and running if started first.
+
+Beta Feature in the works: Connecting Optitrack Cameras and Connecting the Turtlebots
+On the optitrack computer, start ROSCORE, then start the node by typing rosrun optitrack_vrpn node _host:=192.168.1.3
+Tell my lab computer to use another ros computer as the core. That's done by changing the environmental variable ROS_MASTER_URI=http://192.168.1.0.254 (maybe it's 192.168.1.3 but Jake thinks that's for the modem)
+The node I'm going to want to subscribe to is a pose variable called /raph_ned or /raph_enu... these both use a geometry_msgs/PoseStamped message

@@ -46,7 +46,6 @@ class ros_control_node():
         self.cmd_vel_pub = rospy.Publisher('/my_turtle/cmd_vel', Twist, queue_size=10)
         self.pose_sub = rospy.Subscriber('my_turtle/pose', Pose, self.ros_pose_callback)
 
-
     def ros_pose_callback(self, data):
         '''
         Callback function listening in the ROS system for updates to the Turtlebot's position. Saves the data to this class's pose calculation.
