@@ -14,9 +14,19 @@ Useful Notes:
     2) The control testing code should be run with the simulation.py module (which will open a ROS node) and will pause until the turtlesim_node is up and running if started first.
 
 Beta Feature in the works: Connecting Optitrack Cameras and Connecting the Turtlebots
-On the optitrack computer, start ROSCORE, then start the node by typing rosrun optitrack_vrpn node _host:=192.168.1.3
-Tell my lab computer to use another ros computer as the core. That's done by changing the environmental variable ROS_MASTER_URI=http://192.168.1.3:11311/
+Include the following code in your .bashrc for a ros that's NOT the roscore (the backslash MATTERS)
+export ROS_MASTER_URI=http://192.168.1.3:11311/
+export ROS_HOSTNAME=192.168.1.6
+export ROS_IP=192.168.1.6
+Then, include the follwing in the .bashrc for a ros computer that IS the roscore (the backslash may not matter)
+export ROS_MASTER_URI=http://localhost:11311/
+export ROS_HOSTNAME=192.168.1.3
+export ROS_IP=192.168.1.3
+
+To start up the ROS node on the optitrack system you need to type exactly "rosrun optitrack_vrpn node _host:=192.168.1.3" and if you don't include the _host part it will complain indefinitely
+
 On the ROS Master, I need to export the IP address so that other computers can not only see the topics but subscribe to the data too
 When Brady wanted to ask the computer for information about it's public address he installed ldnsutils and then ran "drill optitrack" which was the hostname of the computer 
 The node I'm going to want to subscribe to is a pose variable called /raph_ned or /raph_enu... these both use a geometry_msgs/PoseStamped message
 *** The turtlebot simulator wants to read pose relative to the x and y horizon... so lets say east=x, north=y, and disregard "up".
+Another point to mention: make sure you flip the switch to turn on the optitrack camera system before you attempt to open any nodes!!!!
