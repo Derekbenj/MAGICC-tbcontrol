@@ -166,6 +166,7 @@ include_directories(
 catkin_install_python(PROGRAMS
     scripts/listener.py
     scripts/state_changer.py
+    scripts/test_receive_optitrack.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

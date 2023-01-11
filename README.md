@@ -15,5 +15,8 @@ Useful Notes:
 
 Beta Feature in the works: Connecting Optitrack Cameras and Connecting the Turtlebots
 On the optitrack computer, start ROSCORE, then start the node by typing rosrun optitrack_vrpn node _host:=192.168.1.3
-Tell my lab computer to use another ros computer as the core. That's done by changing the environmental variable ROS_MASTER_URI=http://192.168.1.0.254 (maybe it's 192.168.1.3 but Jake thinks that's for the modem)
+Tell my lab computer to use another ros computer as the core. That's done by changing the environmental variable ROS_MASTER_URI=http://192.168.1.3:11311/
+On the ROS Master, I need to export the IP address so that other computers can not only see the topics but subscribe to the data too
+When Brady wanted to ask the computer for information about it's public address he installed ldnsutils and then ran "drill optitrack" which was the hostname of the computer 
 The node I'm going to want to subscribe to is a pose variable called /raph_ned or /raph_enu... these both use a geometry_msgs/PoseStamped message
+*** The turtlebot simulator wants to read pose relative to the x and y horizon... so lets say east=x, north=y, and disregard "up".
