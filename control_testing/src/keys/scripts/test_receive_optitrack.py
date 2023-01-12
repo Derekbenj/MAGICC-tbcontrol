@@ -8,7 +8,7 @@ def callback(data):
 
 def listener():
     rospy.init_node('optitrack_msg_receiver', anonymous=True)
-    rospy.Subscribe('raph_enu', PoseStamped, callback)
+    rospy.Subscriber('raph_enu', PoseStamped, callback)
     rospy.spin()
 
 if __name__ == "__main__":

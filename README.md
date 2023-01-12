@@ -30,3 +30,9 @@ When Brady wanted to ask the computer for information about it's public address 
 The node I'm going to want to subscribe to is a pose variable called /raph_ned or /raph_enu... these both use a geometry_msgs/PoseStamped message
 *** The turtlebot simulator wants to read pose relative to the x and y horizon... so lets say east=x, north=y, and disregard "up".
 Another point to mention: make sure you flip the switch to turn on the optitrack camera system before you attempt to open any nodes!!!!
+
+When you want to connect to the Kobuki:
+ssh raph@192.168.1.129
+pw: hex
+roslaunch turtlebot_bringup minimal.launch
+then, the message you send to control the turtlebot needs to be a geometry_msg/Twist message, and the node is called "/mobile_base/commands/velocity"

@@ -1,6 +1,6 @@
 import rospy
 import time
-from turtlesim.msg import Pose
+from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Twist
 from turtlesim.srv import Kill
 from turtlesim.srv import TeleportAbsolute, TeleportRelative, Spawn
@@ -21,30 +21,14 @@ class ros_control_node():
         '''
         # initialize ros publisher and subscriber
         rospy.init_node("control_alg_node", anonymous=True)
-        self.pose = Pose()
+        self.pose = PoseStamped()
         self.twist = Twist()
         self.time = time.time_ns()
         self.timestep = 0
 
-        rospy.wait_for_service("/spawn")
-        rospy.wait_for_service("/kill")
-
-        self.teleport_absolute = rospy.ServiceProxy("/my_turtle/teleport_absolute", TeleportAbsolute)
-        self.teleport_relative = rospy.ServiceProxy("/my_turtle/teleport_relative", TeleportRelative)
-        self.spawn_turtle = rospy.ServiceProxy('/spawn', Spawn)
-        self.clear_drawings = rospy.ServiceProxy('/clear', Empty)
-        self.kill = rospy.ServiceProxy('/kill', Kill)
-
-        print("attempting to kill a turtle")
-        try:
-            self.kill("turtle1")
-        except rospy.service.ServiceException:
-            # if the turtle doesn't exist..."
-            print("can't kill a dead turtle...")
-
         # these handles will be the interface to ROS for our turtlebot
         self.cmd_vel_pub = rospy.Publisher('/my_turtle/cmd_vel', Twist, queue_size=10)
-        self.pose_sub = rospy.Subscriber('my_turtle/pose', Pose, self.ros_pose_callback)
+        self.pose_sub = rospy.Subscriber('raph_enu', PoseStamped, self.ros_pose_callback)
 
     def ros_pose_callback(self, data):
         '''
