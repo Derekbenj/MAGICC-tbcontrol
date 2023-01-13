@@ -11,20 +11,20 @@ def test_robot():
         num = int(input("options:\n\tForward: 1\n\tBackward: 2\n\tLeft: 3\n\tRight: 4\n\tQuit: 5\nChoice: "))
         print('\n')
         if num == 1:
-            twist_msg.linear.x = 1
+            twist_msg.linear.x = 0.2
             twist_msg.angular.z = 0
             pub.publish(twist_msg)
         elif num == 2:
-            twist_msg.linear.x = -1
+            twist_msg.linear.x = -0.2
             twist_msg.angular.z = 0
             pub.publish(twist_msg)
         elif num == 3:
             twist_msg.linear.x = 0
-            twist_msg.angular.z = 1
+            twist_msg.angular.z = 1.91
             pub.publish(twist_msg)
         elif num == 4:
             twist_msg.linear.x = 0
-            twist_msg.angular.z = -1
+            twist_msg.angular.z = -1.91
             pub.publish(twist_msg)
         elif num == 5:
             raise rospy.ROSInterruptException

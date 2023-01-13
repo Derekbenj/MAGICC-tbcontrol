@@ -34,5 +34,8 @@ Another point to mention: make sure you flip the switch to turn on the optitrack
 When you want to connect to the Kobuki:
 ssh raph@192.168.1.129
 pw: hex
-roslaunch turtlebot_bringup minimal.launch
+Before attempting to control the turtlebot, make sure you call: roslaunch turtlebot_bringup minimal.launch
 then, the message you send to control the turtlebot needs to be a geometry_msg/Twist message, and the node is called "/mobile_base/commands/velocity"
+Notes on Kobuki Limitations (from http://kobuki.yujinrobot.com/about2/)
+Maximum translational velocity: 70 cm/s
+Maximum rotational velocity: 180 deg/s (>110 deg/s gyro performance will degrade)

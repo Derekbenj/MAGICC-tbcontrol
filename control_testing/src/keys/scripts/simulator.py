@@ -46,7 +46,7 @@ def integrate_dynamics(state, input, dt, turn_rate_range, velocity_range):
     return odeint(dynamics, state, time, args=(input,turn_rate_range,velocity_range))[1]
 
 
-def run_simulation(controller, ros_node, initialState, time, timeStep, turn_rate_range, velocity_range):
+def run_simulation(controller, ros_node, time, timeStep, turn_rate_range, velocity_range):
     '''
     Configure the turtlebot by spawning the new turtle named "my_turtle" and teleporting him to a random start position near 0, 0. For the amount of time calculated in our
     spline trajectory, get the turtlebot's current position and make the geometry_twist message for our turtlebot using the controller code. Publish that information to
@@ -55,17 +55,9 @@ def run_simulation(controller, ros_node, initialState, time, timeStep, turn_rate
     '''
     # initial configuration
     steps = int(time / timeStep) 
-    try:
-        ros_node.spawn_turtle(*[5.5,5.5,0], "my_turtle")
-    except rospy.service.ServiceException:
-        print("turtle already spawned!")
-    ros_node.teleport_absolute(*initialState)
-    ros_node.clear_drawings()
-    sleep(0.1)
 
     currentState = ros_node.get_current_state()
     print("turtlebot state: ", currentState)
-    print("turtlebot thought state: ", initialState)
     t = 0
     states = []
 
@@ -91,11 +83,11 @@ if __name__ == '__main__':
     velocity_range = [0.5,10]
 
     # start the turtle off with a random location [x, y, theta] each with a random value between 0 and 1
-    state_0 = np.random.uniform([0,0,0], [1,1,1],3)
+    # state_0 = np.random.uniform([0,0,0], [1,1,1],3)
 
     # control points are [x, y, theta]. x and y have max of 11
-    controlPoints = [[0,0],[4,1], [0,5],[8,8]]
-    splineTime = [0,10]
+    controlPoints = [[0,0],[0.5,0.2],[0.9,0.9], [-1.2, 1.2]]
+    splineTime = [0,100]
 
     spline = spline_seg(controlPoints, splineTime[0], splineTime[1])
 
@@ -103,7 +95,7 @@ if __name__ == '__main__':
     ros_node = ros_control_node()
 
     try:
-        states = run_simulation(cont, ros_node, state_0, splineTime[1], 0.01, turn_rate_range, velocity_range)
+        states = run_simulation(cont, ros_node, splineTime[1], 0.01, turn_rate_range, velocity_range)
     except rospy.ROSInterruptException:
         pass
 
