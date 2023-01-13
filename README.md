@@ -8,6 +8,7 @@ Current State:
     2) Code for experimenting with ROS interfacing written in C++ and Python (C++ code simply listens for simple keypresses and is unrelated to the controller project, while the python code interfaces with the arduino to change it's state in the state machine and listen for measurements).
     3) I haven't figured out how to write the arduino interface with ROS 2 yet...
     4) Controller code written for interfacing with the turtlebot node.
+    5) Completed code for connecting the Turtlebot with the Optitrack cameras and any lab computer, and the cameras accurately relay pose information. Successfully calculates Quaternion and converts to yaw too. Control system buggy. <-- must fix
 
 Useful Notes:
     1) Don't eat up too much of the dynamic memory in the Arduino code if you modify it. Any code using 75% or more starts warning me that the arduino may malfunction, and often it does.
