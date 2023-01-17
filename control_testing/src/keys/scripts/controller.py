@@ -15,7 +15,7 @@ class controller():
     def __init__(self, spline):
         self.spline = spline
 
-        self.gains = [10, 10, 10]
+        self.gains = [15, 30, 4]
 
         self.error = []
         self.turnRateHistory = []
@@ -23,7 +23,6 @@ class controller():
 
         self.time = time.time_ns()
         self.timestep = 0
-    
 
     def set_spline(self, spline):
         self.spline = spline

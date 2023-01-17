@@ -68,26 +68,27 @@ def run_simulation(controller, ros_node, time, timeStep, turn_rate_range, veloci
         ros_node.publish_cmd_vel()
         currentState = ros_node.get_current_state()
         states.append(currentState)
+        turnRateHistory.append(ros_node.twist.angular.z)
+        velocityHistory.append(ros_node.twist.linear.x)
         t += controller.timestep / 1000000000
         print("\ntime is: ", t, end='\n\n')
 
-        # print("turtlebot position: ", ros_node.get_current_state())
-        # print("sim       position: ", nextState)
+        print("turtlebot position: ", currentState)
 
     return np.array(states)
 
 
 if __name__ == '__main__':
     # set caps on turn rate 
-    turn_rate_range = [-2,2]
-    velocity_range = [0.5,10]
+    turn_rate_range = [-1.91,1.91]
+    velocity_range = [0.05,0.5]
 
     # start the turtle off with a random location [x, y, theta] each with a random value between 0 and 1
     # state_0 = np.random.uniform([0,0,0], [1,1,1],3)
 
     # control points are [x, y, theta]. x and y have max of 11
-    controlPoints = [[0,0],[0.5,0.2],[0.9,0.9], [-1.2, 1.2]]
-    splineTime = [0,100]
+    controlPoints = [[0,0],[0.5,0.2],[0.9,0.9], [-1.2, 1.2], [-0.5, -0.2], [0, 0]]
+    splineTime = [0,15]
 
     spline = spline_seg(controlPoints, splineTime[0], splineTime[1])
 
@@ -122,8 +123,8 @@ if __name__ == '__main__':
     plt.figure()
     plot_spline(spline, 31)
     plt.plot(states[:,0],states[:,1])
-    plt.xlim(0, 11)
-    plt.ylim(0, 11)
+    plt.xlim(-2, 2)
+    plt.ylim(-2, 2)
     ax = plt.gca()
     ax.set_aspect('equal', adjustable='box')
     plt.show()
